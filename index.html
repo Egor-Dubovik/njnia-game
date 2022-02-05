@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+	<div class="game">
+		<div class="game__menu menu">
+			<div class="menu__wraper">
+				<button class="menu__btn-play">play</button>
+				<div class="menu__select select">
+					<div class="select__header">
+						<span class="select__current">chose player</span>
+						<span class="select__icon"></span>
+					</div>
+					<ul class="select__body">
+						<li class="select__item">ninja men</li>
+						<li class="select__item">ninja girl</li>
+						<li class="select__item">adventure girl</li>
+						<li class="select__item">robot</li>
+					</ul>
+				</div>
+				<div class="menu__maps maps">
+					<h2 class="maps__title">Maps:</h2>
+					<div class="maps__body">
+						<div class="maps__options options">
+							<div class="options__item">
+								<input type="radio" class="options__input" id="mars" name="location" checked>
+								<label class="options__label" for="mars">Mars</label>
+							</div>
+							<div class="options__item">
+								<input type="radio" class="options__input" id="river" name="location">
+								<label class="options__label" for="river">River</label>
+							</div>
+							<div class="options__item">
+								<input type="radio" class="options__input" id="jupiter" name="location">
+								<label class="options__label" for="jupiter">Jupiter</label>
+							</div>
+							<div class="options__item">
+								<input type="radio" class="options__input" id="mountain" name="location">
+								<label class="options__label" for="mountain">Mountains</label>
+							</div>
+						</div>
+						<div class="maps__preview">
+							<img src="./assets/img/background/mars.jpg" alt="choosed map">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="game__field field">
+			<canvas class="field__plaer" id="player"></canvas>
+
+		</div>
+	</div>
+	<script type="module" src="./js/script.js"></script>
+</body>
+
+</html>
