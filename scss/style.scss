@@ -44,14 +44,9 @@ body {
 		top: 0;
 		width: 100%;
 		height: 100%;
-		border: 3px solid rgb(255, 7, 7);
 	}
 	&__canvas.active {
 		display: block;
-	}
-	&__weapon {
-		width: 15px;
-		transform: rotate(90deg);
 	}
 	&__btn-close {
 		opacity: 0;
@@ -116,6 +111,8 @@ body {
 .game__plaer,
 .game__map,
 .game__rock,
+.game__weapon,
+.game__ghost,
 .game__canvas {
 	display: none;
 }

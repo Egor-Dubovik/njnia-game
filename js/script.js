@@ -100,23 +100,15 @@ window.addEventListener('load', function () {
 			this.shot = false;
 		}
 		draw(context) {
-			context.strokeStyle = "blue";
-			context.strokeRect(this.x, this.y, this.width, this.height);
+			// context.strokeStyle = "blue";
+			// context.strokeRect(this.x, this.y, this.width, this.height);
 			context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height,
 				this.width, this.height, this.x, this.y, this.width, this.height);
 		}
-		update(input, allObstacles) {
-			// определяем столкновение 
-			// distance(гипотенуза прям-го треугольника)
-			allObstacles.forEach(obstacle => {
-				const dx = (obstacle.x + obstacle.width / 2) - (this.x + this.width / 2);
-				const dy = (obstacle.y + obstacle.height / 2) - (this.y + this.height / 2);
-				const distance = Math.sqrt(dx * dx + dy * dy);
-				if (distance < obstacle.width / 2 + this.width / 2) {
-					gameOver = true;
-					btnRestGame.classList.add('active');
-				}
-			})
+		update(input, allObstacles, allEnemies) {
+			// проверка столкновения 
+			collision(allObstacles);
+			collision(allEnemies);
 
 			// контроль игрока
 			if (this.frameY === 3) {
@@ -168,6 +160,22 @@ window.addEventListener('load', function () {
 			return this.y >= this.gameHeight - this.height - 80;
 		}
 	}
+
+	//Обработка столкновения 
+	function collision(objCollision) {
+		// distance(гипотенуза прям-го треугольника)
+		objCollision.forEach(obj => {
+			const dx = (obj.x + (obj.width + 50) / 2) - (player.x + player.width / 2);
+			const dy = (obj.y + obj.height / 2) - (player.y + player.height / 2);
+			const distance = Math.sqrt(dx * dx + dy * dy);
+			if (distance < obj.width / 2 + player.width / 2) {
+				gameOver = true;
+				btnRestGame.classList.add('active');
+			}
+		})
+	}
+
+
 	class Weapon {
 		constructor(gameWidth, gameHeight) {
 			this.gameWidth = gameWidth;
@@ -181,8 +189,8 @@ window.addEventListener('load', function () {
 			this.markedForDel = false;
 		}
 		draw(context) {
-			context.strokeStyle = "blue";
-			context.strokeRect(this.x, this.y, this.width, this.height);
+			// context.strokeStyle = "blue";
+			// context.strokeRect(this.x, this.y, this.width, this.height);
 			context.drawImage(this.image, this.x, this.y, this.width, this.height);
 		}
 		update() {
@@ -197,7 +205,6 @@ window.addEventListener('load', function () {
 		}
 
 	}
-
 
 	function createShot(input) {
 		if (input.keys.indexOf(' ') > -1) {
@@ -234,8 +241,80 @@ window.addEventListener('load', function () {
 	}
 
 	class Enemy {
+		constructor(gameWidth, gameHeight) {
+			this.gameWidth = gameWidth;
+			this.gameHeight = gameHeight;
+			this.image = document.querySelector('.game__ghost');
+			this.width = 161;
+			this.height = 235;
+			this.frameX = 0;
+			this.frameY = 0;
+			this.maxFrame = 9;
+			this.fps = 100;
+			this.frameTimer = 0;
+			this.frameInterval = 2000 / this.fps;
+			this.x = this.gameWidth;
+			this.y = this.gameHeight - this.height - 300;
+			this.speed = 20;
+			this.markedForDel = false;
+		}
+		draw(context) {
+			// context.strokeStyle = "red";
+			// context.strokeRect(this.x, this.y, this.width, this.height);
+			context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height,
+				this.width, this.height, this.x, this.y, this.width, this.height);
+		}
 
+		update(deltaTime) {
+			if (this.frameTimer > this.frameInterval) {
+				if (this.frameX > this.maxFrame) this.frameX = 0;
+				else this.frameX++;
+				this.frameTimer = 0;
+			} else {
+				this.frameTimer += deltaTime;
+			}
+
+			if (this.x < 0 - this.width) {
+				this.markedForDel = true;
+				score++;
+			}
+			this.x -= this.speed;
+		}
 	}
+
+	function handleEnemy(deltaTime) {
+		if (obstacleTimer > obstacleInterval + randObstInterval) {
+			allEnemies.push(new Enemy(canvas.width, canvas.height));
+			randObstInterval = Math.random() * 1000 + 600
+			obstacleTimer = 0;
+		} else {
+			obstacleTimer += deltaTime;
+		}
+		allEnemies.forEach(enemy => {
+			enemy.draw(ctx);
+			enemy.update(deltaTime);
+
+		});
+
+		allEnemies = allEnemies.filter(enemy => !enemy.markedForDel)
+	}
+
+	//Уничтожение врага кунаем
+	function killEnemy() {
+		for (let i = 0; i < shotArr.length; i++) {
+			for (let j = 0; j < allEnemies.length; j++) {
+				const dx = (shotArr[i].x + shotArr[i].width / 2) - (allEnemies[j].x + allEnemies[j].width / 2);
+				const dy = (shotArr[i].y + shotArr[i].height / 2) - (allEnemies[j].y + allEnemies[j].height / 2);
+				const distance = Math.sqrt(dx * dx + dy * dy);
+				if (distance < shotArr[i].width / 2 + allEnemies[j].width / 2) {
+					allEnemies[j].markedForDel = true;
+					shotArr[i].markedForDel = true;
+					score += 2;
+				}
+			}
+		}
+	}
+
 
 	class Obstacles {
 		constructor(gameWidth, gameHeight) {
@@ -245,13 +324,13 @@ window.addEventListener('load', function () {
 			this.width = 200;
 			this.height = 150;
 			this.x = this.gameWidth;
-			this.y = this.gameHeight - this.height - 50;
+			this.y = this.gameHeight - this.height - 70;
 			this.speed = 30;
 			this.markedForDel = false;
 		}
 		draw(context) {
-			context.strokeStyle = "red";
-			context.strokeRect(this.x, this.y, this.width, this.height);
+			// context.strokeStyle = "red";
+			// context.strokeRect(this.x, this.y, this.width, this.height);
 			context.drawImage(this.image, this.x, this.y, this.width, this.height);
 		}
 
@@ -282,9 +361,7 @@ window.addEventListener('load', function () {
 	}
 
 
-	function handleEnemies() {
 
-	}
 
 	let score = 0;
 	function displayScore(context) {
@@ -310,7 +387,7 @@ window.addEventListener('load', function () {
 	let obstacleInterval = 3000;
 	let randObstInterval = Math.random() * 1000 + 600;
 
-
+	// аниация игры 
 	function animate(timeStamp) {
 		const deltaTime = timeStamp - lastTime;
 		lastTime = timeStamp;
@@ -318,11 +395,12 @@ window.addEventListener('load', function () {
 		ctx.clearRect(0, 0, canvas.width, canvas.height)
 		background.draw(ctx);
 		player.draw(ctx);
-		player.update(input, allObstacles);
+		player.update(input, allObstacles, allEnemies);
 		createShot(input)
 		displayScore(ctx);
 		handleObstacles(deltaTime);
-
+		handleEnemy(deltaTime);
+		killEnemy();
 		if (!gameOver) requestAnimationFrame(animate);
 
 	}
@@ -354,6 +432,7 @@ window.addEventListener('load', function () {
 		player.x = 0;
 		score = 0;
 		allObstacles = [];
+		allEnemies = [];
 		obstacles.markedForDel = true;
 		gameOver = true;
 	}
@@ -363,6 +442,7 @@ window.addEventListener('load', function () {
 		player.x = 0;
 		score = 0;
 		allObstacles = [];
+		allEnemies = [];
 		obstacles.markedForDel = true;
 		gameOver = false;
 		animate(0);
