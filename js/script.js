@@ -9,6 +9,8 @@ const game = document.querySelector('.game');
 const mapsPreview = document.querySelector('.maps__preview img');
 const mapsOptions = document.querySelector('.maps__options');
 const btnCloseGame = document.querySelector('.game__btn-close');
+const btnRestGame = document.querySelector('.game__btn-restart');
+const gameRock = document.querySelector('.game__rock');
 
 
 selectHeader.addEventListener('click', showSelectBody);
@@ -32,6 +34,7 @@ function showSelectBody(e) {
 function choseMap(e) {
 	if (e.target.checked) {
 		mapsPreview.src = `./assets/img/background/${e.target.id}.jpg`;
+		gameRock.src = `./assets/img/rocks/${e.target.id}.png`
 	}
 }
 
@@ -52,6 +55,7 @@ window.addEventListener('load', function () {
 	class InputHandler {
 		constructor() {
 			this.keys = [];
+
 			window.addEventListener('keydown', e => {
 				if ((e.key === 'ArrowRight' ||
 					e.key === 'ArrowDown' ||
@@ -92,8 +96,8 @@ window.addEventListener('load', function () {
 			this.weight = 2;
 		}
 		draw(context) {
-			context.strokeStyle = "blue";
-			context.strokeRect(this.x, this.y, this.width, this.height);
+			// context.strokeStyle = "blue";
+			// context.strokeRect(this.x, this.y, this.width, this.height);
 			context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height,
 				this.width, this.height, this.x, this.y, this.width, this.height);
 		}
@@ -106,12 +110,18 @@ window.addEventListener('load', function () {
 				const distance = Math.sqrt(dx * dx + dy * dy);
 				if (distance < obstacle.width / 2 + this.width / 2) {
 					gameOver = true;
+					btnRestGame.classList.add('active');
 				}
 			})
 
 			// контроль игрока
-			if (this.frameX > this.maxFrame) this.frameX = 0;
-			else this.frameX++;
+			if (this.frameY === 3) {
+				if (this.frameX > this.maxFrame) this.frameX = 7;
+				else this.frameX++;
+			} else {
+				if (this.frameX > this.maxFrame) this.frameX = 0;
+				else this.frameX++;
+			}
 
 			if (input.keys.indexOf('ArrowRight') > -1) {
 				this.speed = 20;
@@ -119,8 +129,25 @@ window.addEventListener('load', function () {
 				this.speed = -20;
 			} else if (input.keys.indexOf('ArrowUp') > -1 && this.onGround()) {
 				this.jumpH -= 30;
-			} else {
+			} else if (input.keys.indexOf('ArrowDown') > -1 && !this.onGround()) {
+				this.jumpH += 30;
+			} else if (this.onGround()) {
+				this.jumpH = 0;
 				this.speed = 0;
+			}
+
+			//при столкновении
+
+
+
+			//вертикальное движение
+			this.y += this.jumpH;
+			if (!this.onGround()) {
+				this.jumpH += this.weight;
+				this.frameY = 3;
+			} else if (this.onGround()) {
+				this.y = this.gameHeight - this.height - 80;
+				this.frameY = 0;
 			}
 
 			//горизонтальное движение
@@ -131,15 +158,10 @@ window.addEventListener('load', function () {
 				this.x = this.gameWidth - this.width;
 			}
 
-			//вертикальное движение
-			this.y += this.jumpH;
-			if (!this.onGround()) {
-				this.jumpH += this.weight;
-				this.frameY = 3;
-			} else {
-				this.y = this.gameHeight - this.height - 80;
-				this.frameY = 0;
+			if (this.speed !== 0 && this.onGround()) {
+				this.frameY = 4;
 			}
+
 
 		}
 		onGround() {
@@ -194,14 +216,19 @@ window.addEventListener('load', function () {
 		update() {
 			if (this.x < 0 - this.width) {
 				this.markedForDel = true;
-				scoreObstacles++;
+				score++;
 			}
 			this.x -= this.speed;
-			// console.log(this.x);
 		}
 	}
 
-	function handleObstacles() {
+	function handleObstacles(deltaTime) {
+		if (obstacleTimer > obstacleInterval + randObstInterval) {
+			allObstacles.push(new Obstacles(canvas.width, canvas.height));
+			obstacleTimer = 0;
+		} else {
+			obstacleTimer += deltaTime;
+		}
 		allObstacles.forEach(obstacle => {
 			obstacle.draw(ctx);
 			obstacle.update();
@@ -211,20 +238,16 @@ window.addEventListener('load', function () {
 		allObstacles = allObstacles.filter(obstacle => !obstacle.markedForDel)
 	}
 
-	let scoreObstacles = 0;
-	setInterval(() => {
-		allObstacles.push(new Obstacles(canvas.width, canvas.height));
-	}, Math.random() * 10000);
-
 
 	function handleEnemies() {
 
 	}
 
+	let score = 0;
 	function displayScore(context) {
 		context.filllStyle = 'white';
 		context.font = ' 600 40px Helvetica';
-		context.fillText(`Score: ${scoreObstacles}`, 20, 50);
+		context.fillText(`Score: ${score}`, 100, 50);
 		if (gameOver) {
 			context.textAlign = 'center';
 			context.fillStyle = 'black';
@@ -236,18 +259,30 @@ window.addEventListener('load', function () {
 	const input = new InputHandler();
 	const player = new Player(canvas.width, canvas.height);
 	const background = new Background(canvas.width, canvas.height);
+	const obstacles = new Obstacles(canvas.width, canvas.height);
 
+	let lastTime = 0;
+	let obstacleTimer = 0;
+	let obstacleInterval = 3000;
+	let randObstInterval = Math.random() * 1000 + Math.random() * 1000;
 
-	function animate() {
+	function animate(timeStamp) {
+		const deltaTime = timeStamp - lastTime;
+		lastTime = timeStamp;
+		console.log(deltaTime);
+
 		ctx.clearRect(0, 0, canvas.width, canvas.height)
 		background.draw(ctx);
 		// background.update();
 		player.draw(ctx);
 		player.update(input, allObstacles);
 		displayScore(ctx);
-		handleObstacles();
+		handleObstacles(deltaTime);
+
 		if (!gameOver) requestAnimationFrame(animate);
+
 	}
+
 
 	// запуск игры 
 	btnPlay.addEventListener('click', launchGame);
@@ -256,22 +291,39 @@ window.addEventListener('load', function () {
 		inputMaps.forEach(map => {
 			if (map.checked) {
 				background.image.src = `./assets/img/background/${map.id}.jpg`
-				// game.style.background = `url("../assets/img/background/${map.id}.jpg") 0 0 / 100% 100% no-repeat`;
 			}
 		})
 		canvas.classList.add('active');
 		btnCloseGame.classList.add('active');
 		gameOver = false;
-		animate();
+		animate(0);
 	}
+
+	//закрыть игру
 	btnCloseGame.addEventListener('click', closeGame);
 	function closeGame() {
 		gameOver = true;
 		gameMenu.classList.remove('hidden');
 		canvas.classList.remove('active');
 		btnCloseGame.classList.remove('active');
+		btnRestGame.classList.remove('active');
+		player.x = 0;
+		score = 0;
+		allObstacles = [];
+		obstacles.markedForDel = true;
+		gameOver = true;
 	}
-
+	btnRestGame.addEventListener('click', gameRestart);
+	// перезапуск игры 
+	function gameRestart() {
+		player.x = 0;
+		score = 0;
+		allObstacles = [];
+		obstacles.markedForDel = true;
+		gameOver = false;
+		animate(0);
+		btnRestGame.classList.remove('active');
+	}
 })
 
 

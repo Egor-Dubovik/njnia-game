@@ -133,7 +133,8 @@ body {
 }
 
 .game__btn-close {
-  display: none;
+  opacity: 0;
+  visibility: hidden;
   position: absolute;
   right: 0;
   width: 50px;
@@ -143,8 +144,13 @@ body {
   background-color: rgba(214, 109, 109, 0.602);
 }
 
+.game__btn-close:hover {
+  background-color: rgba(214, 109, 109, 0.459);
+}
+
 .game__btn-close.active {
-  display: block;
+  opacity: 1;
+  visibility: visible;
 }
 
 .game__btn-close::after, .game__btn-close::before {
@@ -166,6 +172,37 @@ body {
 .game__btn-close::before {
   -webkit-transform: rotate(45deg);
           transform: rotate(45deg);
+}
+
+.game__btn-restart {
+  opacity: 0;
+  visibility: hidden;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 15px 10px;
+  border-radius: 10px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  text-transform: uppercase;
+  position: absolute;
+  right: 0;
+  margin: 10px 100px 0 0;
+  background-color: rgba(214, 109, 109, 0.602);
+  -webkit-transition: 0.2s ease;
+  transition: 0.2s ease;
+}
+
+.game__btn-restart:hover {
+  background-color: rgba(214, 109, 109, 0.459);
+}
+
+.game__btn-restart.active {
+  opacity: 1;
+  visibility: visible;
 }
 
 .game__plaer,

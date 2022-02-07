@@ -50,7 +50,8 @@ body {
 		display: block;
 	}
 	&__btn-close {
-		display: none;
+		opacity: 0;
+		visibility: hidden;
 		position: absolute;
 		right: 0;
 		width: 50px;
@@ -59,8 +60,12 @@ body {
 		margin: 10px 20px 0 0;
 		background-color: rgba(214, 109, 109, 0.602);
 	}
+	&__btn-close:hover {
+		background-color: rgba(214, 109, 109, 0.459);
+	}
 	&__btn-close.active {
-		display: block;
+		opacity: 1;
+		visibility: visible;
 	}
 	&__btn-close::after,
 	&__btn-close::before {
@@ -79,8 +84,31 @@ body {
 	&__btn-close::before {
 		transform: rotate(45deg);
 	}
+	&__btn-restart {
+		opacity: 0;
+		visibility: hidden;
+		font-size: 18px;
+		font-weight: 600;
+		padding: 15px 10px;
+		border-radius: 10px;
+		display: flex;
+		align-items: center;
+		text-transform: uppercase;
+		position: absolute;
+		right: 0;
+		margin: 10px 100px 0 0;
+		background-color: rgba(214, 109, 109, 0.602);
+		transition: 0.2s ease;
+	}
+	&__btn-restart:hover {
+		background-color: rgba(214, 109, 109, 0.459);
+	}
+	&__btn-restart.active {
+		opacity: 1;
+		visibility: visible;
+	}
 }
-// game__btn-close
+
 .game__plaer,
 .game__map,
 .game__rock,
