@@ -132,6 +132,12 @@ body {
   display: block;
 }
 
+.game__weapon {
+  width: 15px;
+  -webkit-transform: rotate(90deg);
+          transform: rotate(90deg);
+}
+
 .game__btn-close {
   opacity: 0;
   visibility: hidden;

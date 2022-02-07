@@ -49,6 +49,10 @@ body {
 	&__canvas.active {
 		display: block;
 	}
+	&__weapon {
+		width: 15px;
+		transform: rotate(90deg);
+	}
 	&__btn-close {
 		opacity: 0;
 		visibility: hidden;

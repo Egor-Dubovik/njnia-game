@@ -50,7 +50,9 @@ window.addEventListener('load', function () {
 	const canvasHight = canvas.height = 1000;
 	let allEnemies = [];
 	let allObstacles = [];
+	let shotArr = [];
 	let gameOver = false;
+	let shot = false;
 
 	class InputHandler {
 		constructor() {
@@ -64,6 +66,7 @@ window.addEventListener('load', function () {
 					e.key === ' ')
 					&& this.keys.indexOf(e.key) === -1) {
 					this.keys.push(e.key)
+					console.log(this.keys)
 				}
 			});
 
@@ -94,10 +97,11 @@ window.addEventListener('load', function () {
 			this.speed = 0;
 			this.jumpH = 0;
 			this.weight = 2;
+			this.shot = false;
 		}
 		draw(context) {
-			// context.strokeStyle = "blue";
-			// context.strokeRect(this.x, this.y, this.width, this.height);
+			context.strokeStyle = "blue";
+			context.strokeRect(this.x, this.y, this.width, this.height);
 			context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height,
 				this.width, this.height, this.x, this.y, this.width, this.height);
 		}
@@ -136,10 +140,6 @@ window.addEventListener('load', function () {
 				this.speed = 0;
 			}
 
-			//при столкновении
-
-
-
 			//вертикальное движение
 			this.y += this.jumpH;
 			if (!this.onGround()) {
@@ -168,6 +168,49 @@ window.addEventListener('load', function () {
 			return this.y >= this.gameHeight - this.height - 80;
 		}
 	}
+	class Weapon {
+		constructor(gameWidth, gameHeight) {
+			this.gameWidth = gameWidth;
+			this.gameHeight = gameHeight;
+			this.image = document.querySelector('.game__weapon');
+			this.x = player.x + 200;
+			this.y = player.y + 170;
+			this.width = 100;
+			this.height = 20;
+			this.speed = 30;
+			this.markedForDel = false;
+		}
+		draw(context) {
+			context.strokeStyle = "blue";
+			context.strokeRect(this.x, this.y, this.width, this.height);
+			context.drawImage(this.image, this.x, this.y, this.width, this.height);
+		}
+		update() {
+			if (shot) {
+				this.x += this.speed;
+				console.log(this.x, this.gameWidth - this.width)
+			}
+			if (this.x > this.gameWidth - this.width) {
+				this.markedForDel = true;
+				console.log(this.markedForDel)
+			}
+		}
+
+	}
+
+
+	function createShot(input) {
+		if (input.keys.indexOf(' ') > -1) {
+			shotArr.push(new Weapon(canvas.width, canvas.height));
+			shot = true;
+		}
+
+		shotArr.forEach(shot => {
+			shot.draw(ctx);
+			shot.update();
+		});
+		shotArr = shotArr.filter(shot => !shot.markedForDel)
+	}
 
 	class Background {
 		constructor(gameWidth, gameHeight) {
@@ -183,7 +226,6 @@ window.addEventListener('load', function () {
 
 		draw(context) {
 			context.drawImage(this.image, this.x, this.y, this.width, this.height);
-			context.drawImage(this.image, this.x + this.width - this.speed, this.y, this.width, this.height);
 		}
 		update() {
 			this.x -= this.speed;
@@ -225,6 +267,7 @@ window.addEventListener('load', function () {
 	function handleObstacles(deltaTime) {
 		if (obstacleTimer > obstacleInterval + randObstInterval) {
 			allObstacles.push(new Obstacles(canvas.width, canvas.height));
+			randObstInterval = Math.random() * 1000 + 600
 			obstacleTimer = 0;
 		} else {
 			obstacleTimer += deltaTime;
@@ -260,22 +303,23 @@ window.addEventListener('load', function () {
 	const player = new Player(canvas.width, canvas.height);
 	const background = new Background(canvas.width, canvas.height);
 	const obstacles = new Obstacles(canvas.width, canvas.height);
+	// const weapon = new Weapon(canvas.width, canvas.height);
 
 	let lastTime = 0;
 	let obstacleTimer = 0;
 	let obstacleInterval = 3000;
-	let randObstInterval = Math.random() * 1000 + Math.random() * 1000;
+	let randObstInterval = Math.random() * 1000 + 600;
+
 
 	function animate(timeStamp) {
 		const deltaTime = timeStamp - lastTime;
 		lastTime = timeStamp;
-		console.log(deltaTime);
 
 		ctx.clearRect(0, 0, canvas.width, canvas.height)
 		background.draw(ctx);
-		// background.update();
 		player.draw(ctx);
 		player.update(input, allObstacles);
+		createShot(input)
 		displayScore(ctx);
 		handleObstacles(deltaTime);
 
