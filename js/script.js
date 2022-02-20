@@ -361,8 +361,6 @@ window.addEventListener('load', function () {
 	}
 
 
-
-
 	let score = 0;
 	function displayScore(context) {
 		context.filllStyle = 'white';
@@ -452,3 +450,4 @@ window.addEventListener('load', function () {
 
 
 
+console.log('Управление стрелочками, бросить кунай на пробел');
